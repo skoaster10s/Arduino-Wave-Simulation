@@ -1,0 +1,61 @@
+import processing.serial.*;
+import cc.arduino.*;
+
+Arduino arduino;
+
+color off = color(4, 79, 111);
+color on = color(84, 145, 158);
+
+int lf = 10;     // Linefeed in ASCII
+Serial myPort;   // The Serial Port
+
+int h = 700;
+int w = 700;
+int radius = 300;
+float angle = 0.0;
+int endX =  w/2-radius;
+int endY = h/2;
+
+void setup() {
+  size(700, 700);
+
+  // Prints out the available serial ports.
+  println(Arduino.list());
+  
+  // Modify this line, by changing the "0" to the index of the serial
+  // port corresponding to your Arduino board (as it appears in the list
+  // printed by the line above).
+  //arduino = new Arduino(this, Arduino.list()[0], 57600);
+  // Open the port you are using at the rate you want:
+  myPort = new Serial(this, Serial.list()[0], 9600);
+  myPort.clear();
+  // Throw out the first reading, in case we started reading 
+  // in the middle of a string from the sender.
+  
+}
+
+void draw() {
+  background(off);
+  stroke(on);
+  
+  ellipse(w/2, h/2, radius*2, radius*2);
+  strokeWeight(5);
+  line(w/2, h/2, endX, endY); 
+  
+}
+
+void serialEvent(Serial myPort) {
+  // read the serial buffer:
+ 
+  String myString = myPort.readStringUntil('\n');
+  // If you got any bytes other than the linefeed:
+  if (myString != null) {
+    myString = trim(myString);
+    
+    // Split the string at the commas and convert the sections into integers:
+    float sensors[] = float(split(myString, ','));
+    angle = angle + sensors[5];
+  }
+  
+  redraw();
+}
