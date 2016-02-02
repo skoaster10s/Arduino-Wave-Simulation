@@ -3,31 +3,24 @@ import cc.arduino.*;
 
 Arduino arduino;
 
-color off = color(4, 79, 111);
-color on = color(84, 145, 158);
-
 Serial myPort;   // The Serial Port
-
-// Ratio: 10 pix = (0.01 m)
 
 int h = 700;          // Height of window
 int w = 700;          // Width of windows
-int radius = 300;    // Radius of circle
-float angle = PI/2;
+int radius = 60;      // Radius of circle
+float angle = PI/2;            // Angle of the frist wave simulation arrow
 float startX = w/2;            // X-coordinate of the center of the circle
 float startY = h/2;            // Y-coordinate of the center of the circle
-float endX1 =  w/2;            // X-coordinate of the endpoint of the arrow
-float endY1 = h/2 - radius;    // Y-coordinate of the endpoint of the arrow
+float endX1 =  w/2;            // X-coordinate of the endpoint of the first arrow
+float endY1 = h/2 - radius;    // Y-coordinate of the endpoint of the frist arrow
 float angVel = 0;          // Angular velocity
 float cenAcc = 0;          // Centripetal acceleration
 float radMotion = 0.3;    // Radius of motion
-float endX2 = 900;
-float endY2 = 400;
+float endX2 = 900;        // X-coordinate of the endpoint of the second arrow
+float endY2 = 400;        // Y-coordinate of the endpoint of the second arrow
 
-float xVel = 0;
-float yVel = 0;
-float xPos = 350;
-float yPos = 350;
+float xVel = 0;        // Current X-velocity of the wave simulation arrow
+float yVel = 0;        // Current Y-velocity of the wave simulation arrow
 
 // Colors defined here
 color white = color(255);
@@ -52,11 +45,13 @@ void setup() {
 void draw() {
   background(white);
   
+  // Drawing the first wave simulation arrow
   noStroke();
   fill(black);
   ellipse(startX, startY, radius*2, radius*2);
   arrow(startX, startY, endX1, endY1, cyan, 7); 
   
+  // Drawing the left panel containing calculations for centripetal acceleration
   stroke(black);
   line(700, 700, 700, 0);
   fill(black);
@@ -68,6 +63,7 @@ void draw() {
   text("Radius of motion = " + radMotion + " m", 750, 150);
   text("Centripetal acceleration = " + nf(cenAcc, 2, 3) + " m/s^2", 720, 200);
   
+  // Drawing the second centripetal acceleration arrow
   noStroke();
   fill(green);
   ellipse(900, 400, 50, 50);
@@ -82,27 +78,37 @@ void serialEvent(Serial port) {
   if (myString != null) {
     
     float sensors[] = float(split(myString, ' '));
+    
+    // Hard-coded correction for accelerometer data
+    sensors[0] += 0.5;
+    sensors[1] -= 1.27;
     float change[] = calcDPos(10*sensors[0], 10*sensors[1]);
-    println(change);
     
     // Updating angle of the arrow
     angVel = (-sensors[5])/180 * PI;
     angle = angle + angVel * 0.05;
+    
     // Updating centripetal acceleration
     cenAcc = radMotion * angVel * angVel;
     
-    startX = startX + change[0];
-    startY = startY - change [1];
-    endX1 = w/2 - radius * cos(angle) + change[0];
-    endY1 = h/2 - radius * sin(angle) - change[1];
-    println(endX1);
-    println(endY1);
+    // Updating endpoints for the first wave simulation arrow 
+    // if the circle is not off the screen
+    if (startX > radius || startX < w-radius || startY > radius || startY < h-radius)
+    {
+      startX = startX + change[0];
+      startY = startY - change[1];
+      endX1 = startX - radius * cos(angle);
+      endY1 = startY - radius * sin(angle);
+    }
+    
+    // Updating endpoints for the second centripetal acceleration arrow
     endX2 = 900 - 10 * cenAcc * cos(angle + PI);
     endY2 = 400 - 10 * cenAcc * sin(angle + PI);
   }
 
 }
 
+// Function created to draw an arrow
 void arrow(float x1, float y1, float x2, float y2, color c, int weight) {
   stroke(c);
   strokeWeight(weight);
@@ -116,6 +122,8 @@ void arrow(float x1, float y1, float x2, float y2, color c, int weight) {
   popMatrix();
 }
 
+// Function that calculates the change in position based on the acceleration
+// while also updating currect x- and y-velocities
 float[] calcDPos(float accX, float accY) {
   float[] change = {xVel * 0.05 + 0.5 * accX * 0.05*0.05, yVel * 0.05 + 0.5 * accY * 0.05*0.05};
   xVel = xVel + accX * 0.05;
