@@ -1,7 +1,7 @@
 # Arduino Wave Simulation
-  
+
+![alt text](Documentation/Python-Real-Time-Graph-Screenshot.png)  
 ![alt text](Documentation/Processing-Wave-Simulation-Screenshot.png)
-![alt text](Documentation/Python-Real-Time-Graph-Screenshot.png)
 
 ###This package contains:
 - [Python script](Accelerometer-GyroData.py) that displays a real-time graph of the X-acceleration, X-velocity, and Z-rotation due to the way I wired the accelerometer and gyroscope
