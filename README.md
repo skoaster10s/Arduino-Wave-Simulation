@@ -16,19 +16,19 @@
 
 ###Setup:
 #####Accelerometer (MMA8451) --> Uno:
-'''
+```
 Vin --> 5V  
 GND --> GND  
 SCL --> A5  
 SDA --> A4 
-''' 
+```
 
 #####Gyroscope (L3GD20H) --> Uno:
-'''
+```
 Vin --> 5V  
 GND --> GND  
  CS --> Digital 4  
 SA0 --> Digital 5  
 SDA --> Digital 6  
 SCL --> Digital 7  
-'''
+```
